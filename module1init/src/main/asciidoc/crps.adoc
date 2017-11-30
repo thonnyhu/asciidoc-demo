@@ -1,5 +1,14 @@
 == 代收付系统交接文档
 
-=== 功能
+=== 对外功能
 
-==== 单笔代收付
+====
+代收付系统对外接口
+接口所在项目: rkylin-crps-api
+接口所在的类:  com.rkylin.crps.service.CrpsApiService
+====
+
+==== 单笔代收代付接口
+public OrderDetail transDetailFromSingle(OrderDetail orderDetail);
+
+===== 业务处理逻辑
