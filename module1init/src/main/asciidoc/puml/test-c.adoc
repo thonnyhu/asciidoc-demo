@@ -1,0 +1,16 @@
+[plantuml,"plantuml-demo"]
+....
+@startuml
+
+(*) --> "Check Input"
+If "input is verbose" then
+--> [Yes] "turn on verbosity"
+--> "run command"
+else
+--> "run command"
+Endif
+--> (*)
+
+@enduml
+
+....

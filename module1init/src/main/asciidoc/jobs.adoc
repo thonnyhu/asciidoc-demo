@@ -1,0 +1,222 @@
+== 调度系统用户手册
+
+
+
+=== 1 简介
+
+==== 概述
+:experimental:
+
+Jobcenter是一个轻量级分布式任务统一调度框架，其核心设计目标是轻量级、易扩展。
+
+==== 特点
+. 简单：支持通过WEB页面对任务进行CRUD操作，操作简单；
+. 动态：支持动态修改任务状态、暂停/恢复任务；
+. 调度HA：“调度中心”基于集群Quartz实现，可保证调度中心HA；
+. 任务HA：任务通过zookeeper+dubbo，可保证任务HA；
+. 一致性：“调度中心”通过DB锁保证集群分布式调度的一致性；
+. 执行参数：支持在线配置任务方法入参；
+. 执行日志：支持在线查看调度结果日志；
+. 任务串行/并行：同一任务的串行或并行执行；
+. 支持登录验证;
+
+=== 任务管理
+
+==== 新建任务
+
+ 在调度管理界面，如下图所示，点击“新增”按钮，弹出新增任务界面。
+{imagesdir}
+
+image::pic/Picture1.png[图2.1A]
+___
+
+ 界面如下图所示。添加属性值，保存后实时生效。
+
+image::pic/Picture2.png[图2.1B]
+___
+
+==== 修改任务
+ 在调度管理界面，如下图所示，点击“修改”按钮
+
+image::pic/Picture3.png[图2.2A]
+___
+
+ 弹出修改任务界面，界面如图所示。修改属性值，保存后实时生效。
+
+image::pic/Picture4.png[图2.2B]
+___
+
+==== 新建/修改任务配置参数
+
+
+[cols=2*,frame="all",caption="",title="配置参数"]
+|===
+
+|批次名称
+|任意名称，如日终处理
+
+|Corn
+|quartz时间表达式，根据业务情况配置
+
+|接口名
+|dubbo接口全名，如com.rongcapital.mtkernel.service.DateProcessServiceApi
+
+|接口方法
+|接口方法名,如dateProcessing，方法必须是无参或是有一个String类型的参数的方法
+
+|版本
+|dubbo接口方法版本
+
+|组名
+|Dubbo接口组名
+
+|执行参数
+|接口方法参数
+
+|串行/并行
+|同一任务的串行/并行执行
+
+|注册地址:端口
+|zookeeper地址，如172.16.35.237:2181,172.16.35.144:2181,172.16.35.222:2181|172.16.35.238:2181
+
+|===
+
+==== 恢复/暂停
+可对调度任务进行暂停和恢复操作；
+
+image::pic/Picture5.png[title="图2.4A",caption=""]
+
+==== 手动触发一次调度
+点击“执行”按钮，可手动触发一次任务调度，不影响原有调度规则。
+
+image::pic/Picture6.png[title="图2.5A",caption=""]
+
+==== 删除任务
+点击删除按钮，可以删除对应任务。
+
+image::pic/Picture7.png[title="图2.6A",caption=""]
+
+==== 查看错误日志
+*在调度日志界面*，如图2.7A所示，点击“查看”按钮，查看错误日志信息，界面如图
+[.line-through]####
+
+image::pic/Picture8.png[:imagestitle="图2.7A",caption=""]
+
+___
+image::pic/Picture9.png[caption="",alt="",height='220',width="350",title="图2.7B"]
+
+=== 说明
+
+[start=1]
+1. 调度端不提供timeout、集群容错模式、重试次数等，这些在服务提供方根据服务特点配置，服务提供方最清楚了timeout、集群容错模式、重试次数等(ps:Consumer端配置这些属性，这对于Provider不可控的，并且往往是不合理的，在Provider上尽量多配置Consumer端属性)。
+2. 对于非幂等操作，服务提供者可能需要把容错模式配置为failfast（快速失败），如果超时、网络阻塞等情况，服务消费者这时抛出异常，在定时任务中日志记录为FAIL，但是在服务提供方可能已经执行成功，当需要手动执行定时任务时，一定要先确定服务提供方是否成功，再决定是否需要手动执行定时任务。
+3. 当在不同机器上部署集群，系统时间必须同步，时钟同步精确到秒。
+4. 暂停任务编辑后状态会恢复为执行状态。
+5. 连接zookeeper超时时间设为为20s(ps:dubbo连接不上zookeeper无限次重新连接，持续占用线程问题)。
+6. 造成任务MISS的可能原因：
+    a. 系统因为某些原因被重启。在系统关闭到重新启动之间的一段时间里，可能有些任务会被 misfire。
+    b. Trigger 被暂停（suspend）的一段时间里，有些任务可能会被 misfire。
+    c. 线程池中所有线程都被占用，导致任务无法被触发执行，造成 misfire。
+
+=== 表结构
+
+==== JOB_TASK_INFO
+任务信息，保存需要执行的任务
+```
+CREATE TABLE `JOB_TASK_INFO` (
+  `TASK_ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `JOB_NAME` varchar(200) COLLATE utf8_bin NOT NULL COMMENT '批次名称',
+  `JOB_CRON` varchar(80) COLLATE utf8_bin DEFAULT NULL COMMENT '任务执行CORN',
+  `JOB_DESC` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '任务执行描述',
+  `JOB_CLASS` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '任务执行JOBBEAN',
+  `JOB_STATUS` varchar(100) COLLATE utf8_bin DEFAULT NULL COMMENT '任务状态',
+  `JOB_DATA` varchar(512) COLLATE utf8_bin DEFAULT NULL COMMENT '任务执行数据',
+  `INTER_CLASS` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '接口类全路径',
+  `INTER_METHOD_NAME` varchar(60) COLLATE utf8_bin DEFAULT NULL COMMENT '执行方法',
+  `INTER_VER` varchar(10) COLLATE utf8_bin DEFAULT NULL COMMENT '接口版本号',
+  `INTER_GROUP` varchar(10) COLLATE utf8_bin DEFAULT NULL COMMENT '接口组名',
+  `REGISTRY_PROTOCOL` varchar(20) COLLATE utf8_bin DEFAULT NULL COMMENT '注册中心协议',
+  `INTER_REGIST_ADDRESS` varchar(100) COLLATE utf8_bin NOT NULL COMMENT '注册中心服务器地址,同一集群内的多个地址用逗号分隔',
+  `JOB_CONCURRENT` tinyint(4) DEFAULT NULL COMMENT '0：串行 1：并行',
+  `AUTHOR` varchar(64) COLLATE utf8_bin DEFAULT NULL COMMENT '作者',
+  `ALARM_EMAIL` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '报警邮件',
+  `ALARM_THRESHOLD` int(10) DEFAULT NULL COMMENT '报警阀值(连续失败次数)',
+  `REMARK` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '备注',
+  `CREATED_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '记录创建时间',
+  `UPDATED_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '记录更新时间',
+  PRIMARY KEY (`TASK_ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='任务信息';
+
+```
+
+==== HI_JOB_TASK_INFO
+历史任务信息,保存添加和修改任务记录痕迹
+```
+CREATE TABLE `HI_JOB_TASK_INFO` (
+  `HI_ID` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自动增长ID',
+  `TASK_ID` int(10) unsigned DEFAULT NULL COMMENT '任务ID',
+  `JOB_NAME` varchar(200) COLLATE utf8_bin NOT NULL COMMENT '批次名称',
+  `JOB_CRON` varchar(80) COLLATE utf8_bin DEFAULT NULL COMMENT '任务执行CORN',
+  `JOB_DESC` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '任务执行描述',
+  `JOB_CLASS` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '任务执行JOBBEAN',
+  `JOB_STATUS` varchar(100) COLLATE utf8_bin DEFAULT NULL COMMENT '任务状态',
+  `JOB_DATA` varchar(512) COLLATE utf8_bin DEFAULT NULL COMMENT '任务执行数据',
+  `INTER_CLASS` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '接口类全路径',
+  `INTER_METHOD_NAME` varchar(60) COLLATE utf8_bin DEFAULT NULL COMMENT '执行方法',
+  `INTER_VER` varchar(10) COLLATE utf8_bin DEFAULT NULL COMMENT '接口版本号',
+  `INTER_GROUP` varchar(10) COLLATE utf8_bin DEFAULT NULL COMMENT '接口组名',
+  `REGISTRY_PROTOCOL` varchar(20) COLLATE utf8_bin DEFAULT NULL COMMENT '注册中心协议',
+  `INTER_REGIST_ADDRESS` varchar(100) COLLATE utf8_bin DEFAULT NULL COMMENT '注册中心服务器地址,同一集群内的多个地址用逗号分隔',
+  `JOB_CONCURRENT` tinyint(4) DEFAULT NULL COMMENT '0：串行 1：并行',
+  `AUTHOR` varchar(64) COLLATE utf8_bin DEFAULT NULL COMMENT '作者',
+  `ALARM_EMAIL` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '报警邮件',
+  `ALARM_THRESHOLD` int(10) DEFAULT NULL COMMENT '报警阀值(连续失败次数)',
+  `REMARK` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '备注',
+  `CREATED_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '记录创建时间',
+  `UPDATED_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '记录更新时间',
+  PRIMARY KEY (`HI_ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='历史任务信息';
+```
+
+==== JOB_LOG
+跑批日志记录
+```
+CREATE TABLE `JOB_LOG` (
+  `LOG_ID` int(10) NOT NULL AUTO_INCREMENT,
+  `TASK_ID` int(10) NOT NULL COMMENT '任务ID',
+  `JOB_GROUP` varchar(200) COLLATE utf8_bin DEFAULT NULL COMMENT '任务组',
+  `JOB_NAME` varchar(200) COLLATE utf8_bin NOT NULL COMMENT '批次名称',
+  `JOB_CRON` varchar(80) COLLATE utf8_bin DEFAULT NULL COMMENT '任务执行CORN',
+  `JOB_DESC` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '任务执行描述',
+  `INTER_CLASS` varchar(255) COLLATE utf8_bin NOT NULL COMMENT '接口类全路径',
+  `INTER_METHOD_NAME` varchar(60) COLLATE utf8_bin NOT NULL COMMENT '任务执行方法',
+  `INTER_GROUP` varchar(10) COLLATE utf8_bin DEFAULT NULL COMMENT '接口组名',
+  `INTER_VER` varchar(10) COLLATE utf8_bin DEFAULT NULL COMMENT '接口版本号',
+  `JOB_CONCURRENT` tinyint(4) DEFAULT NULL COMMENT '0：串行 1：并行',
+  `JOB_DATA` varchar(512) COLLATE utf8_bin DEFAULT NULL COMMENT '任务执行数据',
+  `TRIGGER_TIME` datetime DEFAULT NULL COMMENT '调度-时间',
+  `HANDLE_TIME` datetime DEFAULT NULL COMMENT '执行-时间',
+  `HANDLE_STATUS` varchar(30) COLLATE utf8_bin DEFAULT NULL COMMENT '执行-状态',
+  `HANDLE_MSG` varchar(2048) COLLATE utf8_bin DEFAULT NULL COMMENT '执行-结果',
+  `QTZ_IP` varchar(20) COLLATE utf8_bin DEFAULT NULL COMMENT 'IP',
+  `REGISTRY_PROTOCOL` varchar(20) COLLATE utf8_bin DEFAULT NULL COMMENT '注册中心协议',
+  PRIMARY KEY (`LOG_ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=210 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='跑批日志记录';
+```
+
+==== QRTZ_*
+quartz分布式框架自带表
+
+=== 使用手顺
+
+==== 添加
+. 将要添加的定时任务的API的GAV信息添加到定时任务的pom中
+. 通过页面进行添加即可
+. 目前页面不支持批量操作
+
+==== 更新
+. 必须通过页面或者后台接口进行更新方能生效，任何通过改库的方式都不支持
+
+==== 删除/暂停
+. 必须通过页面或者后台接口，其他操作无效。
+

@@ -1,0 +1,10 @@
+= AsciiDoc的maven工程配置
+
+为了防止代码丢失，将工程结构放在这里。 +
+
+.内容包括:
+* 基本adoc的语法
+* adoc的maven插件，包括:asciidoctor-diagram,asciidoctor-pdf,asciidoctor-maven-plugin
+
+.参考内容
+- https://github.com/asciidoctor[*asciidoc的github空间*]
