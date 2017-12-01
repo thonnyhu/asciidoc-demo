@@ -9,7 +9,8 @@
     <packaging>pom</packaging>
     <version>1.0.0</version>
     <modules>
-        <module>module1init</module>
+        <module>module1init</module> <!-- 任务调度 -->
+        <module>asciidoc-operate-manual</module> <!-- 运营手册 -->
     </modules>
 
 

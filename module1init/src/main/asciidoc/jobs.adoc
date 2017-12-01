@@ -1,15 +1,13 @@
-== 调度系统用户手册
 
 
+== 简介
 
-=== 简介
-
-==== 概述
+=== 概述
 :experimental:
 
 Jobcenter是一个轻量级分布式任务统一调度框架，其核心设计目标是轻量级、易扩展。
 
-==== 特点
+=== 特点
 . 简单：支持通过WEB页面对任务进行CRUD操作，操作简单；
 . 动态：支持动态修改任务状态、暂停/恢复任务；
 . 调度HA：“调度中心”基于集群Quartz实现，可保证调度中心HA；
@@ -20,9 +18,9 @@ Jobcenter是一个轻量级分布式任务统一调度框架，其核心设计�
 . 任务串行/并行：同一任务的串行或并行执行；
 . 支持登录验证;
 
-=== 任务管理
+== 任务管理
 
-==== 新建任务
+=== 新建任务
 
  在调度管理界面，如下图所示，点击“新增”按钮，弹出新增任务界面。
 
@@ -34,7 +32,7 @@ ___
 image::pic/Picture2.png[图2.1B]
 ___
 
-==== 修改任务
+=== 修改任务
  在调度管理界面，如下图所示，点击“修改”按钮
 
 image::pic/Picture3.png[图2.2A]
@@ -45,7 +43,7 @@ ___
 image::pic/Picture4.png[图2.2B]
 ___
 
-==== 新建/修改任务配置参数
+=== 新建/修改任务配置参数
 
 
 [cols=2*,frame="all",caption="",title="配置参数"]
@@ -80,22 +78,22 @@ ___
 
 |===
 
-==== 恢复/暂停
+=== 恢复/暂停
 可对调度任务进行暂停和恢复操作；
 
 image::pic/Picture5.png[title="图2.4A",caption=""]
 
-==== 手动触发一次调度
+=== 手动触发一次调度
 点击“执行”按钮，可手动触发一次任务调度，不影响原有调度规则。
 
 image::pic/Picture6.png[title="图2.5A",caption=""]
 
-==== 删除任务
+=== 删除任务
 点击删除按钮，可以删除对应任务。
 
 image::pic/Picture7.png[title="图2.6A",caption=""]
 
-==== 查看错误日志
+=== 查看错误日志
 *在调度日志界面*，如图2.7A所示，点击“查看”按钮，查看错误日志信息，界面如图
 [.line-through]####
 
@@ -104,7 +102,7 @@ image::pic/Picture8.png[:imagestitle="图2.7A",caption=""]
 ___
 image::pic/Picture9.png[caption="",alt="",height='220',width="350",title="图2.7B"]
 
-=== 说明
+== 说明
 
 [start=1]
 1. 调度端不提供timeout、集群容错模式、重试次数等，这些在服务提供方根据服务特点配置，服务提供方最清楚了timeout、集群容错模式、重试次数等(ps:Consumer端配置这些属性，这对于Provider不可控的，并且往往是不合理的，在Provider上尽量多配置Consumer端属性)。
@@ -117,9 +115,9 @@ image::pic/Picture9.png[caption="",alt="",height='220',width="350",title="图2.7
     b. Trigger 被暂停（suspend）的一段时间里，有些任务可能会被 misfire。
     c. 线程池中所有线程都被占用，导致任务无法被触发执行，造成 misfire。
 
-=== 表结构
+== 表结构
 
-==== JOB_TASK_INFO
+=== JOB_TASK_INFO
 任务信息，保存需要执行的任务
 ```
 CREATE TABLE `JOB_TASK_INFO` (
@@ -148,7 +146,7 @@ CREATE TABLE `JOB_TASK_INFO` (
 
 ```
 
-==== HI_JOB_TASK_INFO
+=== HI_JOB_TASK_INFO
 历史任务信息,保存添加和修改任务记录痕迹
 ```
 CREATE TABLE `HI_JOB_TASK_INFO` (
@@ -177,7 +175,7 @@ CREATE TABLE `HI_JOB_TASK_INFO` (
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='历史任务信息';
 ```
 
-==== JOB_LOG
+=== JOB_LOG
 跑批日志记录
 ```
 CREATE TABLE `JOB_LOG` (
@@ -203,19 +201,19 @@ CREATE TABLE `JOB_LOG` (
 ) ENGINE=InnoDB AUTO_INCREMENT=210 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='跑批日志记录';
 ```
 
-==== QRTZ_*
+=== QRTZ_*
 quartz分布式框架自带表
 
-=== 使用手顺
+== 使用手顺
 
-==== 添加
+=== 添加
 . 将要添加的定时任务的API的GAV信息添加到定时任务的pom中
 . 通过页面进行添加即可
 . 目前页面不支持批量操作
 
-==== 更新
+=== 更新
 . 必须通过页面或者后台接口进行更新方能生效，任何通过改库的方式都不支持
 
-==== 删除/暂停
+=== 删除/暂停
 . 必须通过页面或者后台接口，其他操作无效。
 

@@ -64,3 +64,40 @@ WHERE
     GROUP BY A.ORDER_ID ;
 ```
 
+== Q4: 运营提前还款操作
+
+=== 背景描述
+课栈的大机构有帮学员垫付的操作，量比较大，由运营人员操作成本太高，因此交于技术批量处理
+
+=== 操作方式
+. 从svn上pull下代码，svn地址：https://svn.in.dataengine.com/svn/RD/Development/Operation/Order/trunk/order-1.0.1
+. 进行maven install:install 确保项目依赖包下载完毕
+. 在rkylin-order-core模块下的resource中，找到fourthBatch_result，将运营人员提供的表格中的信息取出，总共四项信息从左到右一次为：订单号，用户id，应还款时间，应还款金额。 四项信息用","分割，日期格式为yyyy-MM-dd。
+`````
+Tips: 运营人员一般提供为excel格式，将多余列隐藏后，可直接复制粘贴出来。粘贴出来的内容为"\t"分割的4列，然后将分隔符"\t"替换为","，将日期格式规范，即可。
+`````
+. 找到com.rkylin.order.file.FileProcessor类，直接运行，等待运行结束即可。
+
+== Q5: 运营线下还款操作
+
+=== 背景描述
+课栈贷款业务的机构代偿，学生线下还给了机构，机构线下给了保理，然后维护线上数据
+
+=== 操作方式
+. 从svn上pull下代码，svn地址：https://svn.in.dataengine.com/svn/RD/Development/Operation/Order/trunk/order-1.0.1
+. 进行maven install:install 确保项目依赖包下载完毕
+. 在rkylin-order-core 模块中，resource下有一个offline_result文件，文件中五列分别对应以下信息：用户订单号,用户id,线下还款日期,应还金额,需要还款的还款日。第五项需要还款的还款日内容为：所还年份-月份-15。注意数据格式一致
+. 找到工程com.rkylin.order.file.OffLineProcessor类，直接执行main方法即可
+
+== Q5: 某日债权包有问题
+
+=== 背景描述
+背景描述:ROP文件服务器不稳定，导致生成的日债权文件不全，需要重新生成
+
+=== 操作方式
+. 通过跳板机登录rc@10.117.59.209
+. 连接生产ftp，删除掉当日债权文件，债权文件是在t+1日的文件夹内放入t日的债权文件,Example:10月8日债权在ftp上的文件夹是10月9日
+. cd /home/rc/huzijian ; vim client/datafile/data2.txt; data2.txt文件有两行，第一行是机构，第二行是日期，日期为t日。
+. 删除服务器上的临时文件,rm -rf 2017-10-09
+. 运行./day.sh
+. 检查ftp上文件是否生成，Ps:生成过程时间比较长，可稍后查看。
