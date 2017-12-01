@@ -2,23 +2,23 @@ font:
   catalog:
     # Noto Serif supports Latin, Latin-1 Supplement, Latin Extended-A, Greek, Cyrillic, Vietnamese & an assortment of symbols
     Noto Serif:
-      normal: Songti.ttc
-      bold: Songti.ttc
-      italic: Songti.ttc
-      bold_italic: Songti.ttc
+      normal: yahei.ttf
+      bold: yahei.ttf
+      italic: yahei.ttf
+      bold_italic: yahei.ttf
     # M+ 1mn supports ASCII and the circled numbers used for conums
     M+ 1mn:
-      normal: Songti.ttc
-      bold: Songti.ttc
-      italic: Songti.ttc
-      bold_italic: Songti.ttc
+      normal: yahei.ttf
+      bold: yahei.ttf
+      italic: yahei.ttf
+      bold_italic: yahei.ttf
     # M+ 1p supports Latin, Latin-1 Supplement, Latin Extended, Greek, Cyrillic, Vietnamese, Japanese & an assortment of symbols
     # It also provides arrows for ->, <-, => and <= replacements in case these glyphs are missing from font
     M+ 1p Fallback:
-      normal: Songti.ttc
-      bold: Songti.ttc
-      italic: Songti.ttc
-      bold_italic: Songti.ttc
+      normal: yahei.ttf
+      bold: yahei.ttf
+      italic: yahei.ttf
+      bold_italic: yahei.ttf
   fallbacks:
     - M+ 1p Fallback
 page:
