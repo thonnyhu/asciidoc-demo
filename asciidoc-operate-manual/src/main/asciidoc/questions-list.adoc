@@ -1,0 +1,66 @@
+== Q1:代收付有，多渠道没有的数据该如何处理
+
+=== 背景描述
+代收付在发送数据时，有时会掉单，但代收付的GENERATION_PAYMENT 的状态已经变成2.
+
+=== 操作方式
+. 先将GENERATION_PAYMENT中的数据删除，记录下对应的TRANS_SUMMARY_ID
+. 将对应的TRANS_DETAIL_SUMMARY 的状态更新成为1
+
+[title=单笔例句]
+```
+DELETE FROM `payment`.GENERATION_PAYMENT WHERE GENERATION_ID IN ('2017071306115084', '2017071306115546', '2017071306115753');
+UPDATE `payment`.TRANS_DETAIL_SUMMARY SET STATUS_ID = '1' WHERE TRANS_SUMMARY_ID IN ('11635944','11636347','11636589');
+```
+
+[title=批量例句]
+```
+DELETE FROM `payment`.GENERATION_PAYMENT WHERE BATCH_NO IN ('B2017092801011759479693');
+UPDATE `payment`.TRANS_DETAIL_SUMMARY SET STATUS_ID = '1',EXPAND1 = '' WHERE EXPAND1 IN ('B2017092801011759479693');
+```
+
+== Q2:代收付历史表数据维护(不支持现在支付代付)
+
+=== 背景描述
+在按银行拆分批次上线后，导致代收付系统的数据切换定时任务（将数据从GENERATION_PAYMENT表中切到GENERATION_PAYMENT_HISTORY）对状态扫描不对，会将处理中的切入到历史表中
+
+=== 操作方式
+. 查出未返回结果的批次号
+. 通过执行sql1，将数据从历史表GENERATION_PAYMENT_HISTORY切回交易表GENERATION_PAYMENT
+. 通过执行sql2，将已经从历史表切到交易表的数据删除
+. 通过多渠道结果回推界面，重新发送通知()
+.. 多渠道登陆地址:http://oprsjf.rongcapital.com.cn:8094/GateRouter-web/logon/logon.do
+.. 列表选择对应交易：代收选收款批次信息管理，代付选付款批次信息管理
+.. 根据批次号筛选
+.. 点击通知
+. 检查数据
+
+== Q3:订单现金贷日放款报表
+
+=== 背景描述
+提供给现金贷放款日手工对账
+
+=== 操作方式
+. 通过sql查询数据
+. 生成excel
+. 发送运营人员
+
+=== Sql内容
+[title=现金贷日报表]
+```
+SELECT OP.PAYMENT_ID,D.END_TIME FROM `order`.ORDER_INFO OI
+INNER JOIN `order`.ORDER_PAYMENT OP ON OI.ORDER_ID = OP.RETRIREF_NO AND OP.STATUS_ID = '3'
+INNER JOIN `loan`.LOAN_ORDER_INFO A ON A.USER_ID = OI.USER_ID AND OI.REMARK = A.ORDER_ID
+INNER JOIN `loan`.LOAN_ORDER_INFO LOI ON A.USER_ID = LOI.USER_ID AND LOI.ORDER_TYPE_ID = 'M30001' AND LOI.ROOT_INST_CD='M000029' AND LOI.STATUS_ID = '41'
+INNER JOIN `loan`.LOAN_ITEM B ON A.ORDER_ID = B.ORDER_ID AND B.ORDER_ITEM_TYPE_ID = 'M20005' AND B.STATUS_ID = '1'
+INNER JOIN `loan`.LOAN_ITEM C ON A.ORDER_ID = C.ORDER_ID AND C.ORDER_ITEM_TYPE_ID = 'M20007' AND C.STATUS_ID = '1'
+INNER JOIN `loan`.LOAN_ITEM D ON A.ORDER_ID = D.ORDER_ID AND D.ORDER_ITEM_TYPE_ID = 'M20004' AND D.STATUS_ID = '1' AND D.END_TIME IN (?)
+WHERE
+    A.ORDER_TYPE_ID = 'M20001'
+    AND OI.ROOT_INST_CD = 'M000029'
+    AND A.ROOT_INST_CD = 'M000029'
+    AND A.STATUS_ID IN ('5','10')
+    AND A.PROVIDER_ID = 'M00000X'
+    GROUP BY A.ORDER_ID ;
+```
+
