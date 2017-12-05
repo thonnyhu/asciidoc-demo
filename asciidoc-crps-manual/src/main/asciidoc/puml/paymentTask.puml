@@ -1,0 +1,17 @@
+
+@startuml
+
+start
+if(通联代付发送时间) then (no)
+    if (现在支付发送时间) then (yes)
+    :发送现在支付代付;
+    endif
+else (yes)
+    :发送所有代付;
+endif
+:开始处理代收业务;
+if(通联代收发送时间) then (yes)
+:发送所有代收;
+endif
+stop
+@enduml

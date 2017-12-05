@@ -1,0 +1,163 @@
+== 对外接口介绍
+
+代收付系统对外接口 +
+接口所在项目: rkylin-crps-api +
+接口所在的类:  com.rkylin.crps.service.CrpsApiService
+
+=== 单笔代收代付接口
+public OrderDetail transDetailFromSingle(OrderDetail orderDetail);
+
+==== 业务处理逻辑:
+
+include::puml/transDetailFromSingle.adoc[]
+
+=== 批量代收付List数据
+[#transDetailFromOrderList]
+public OrderDetail transDetailFromOrderList(List<OrderDetail> orderDetailList);
+
+==== 业务处理逻辑
+include::puml/transDetailFromOrderList.adoc[]
+
+=== 批量代收付单条发送
+public ResultCode transDetailFromOrder(OrderDetail orderDetail);
+
+=== 账户查询代收付结果接口
+public OrderDetails findDetailsByBatchOrOrderNos(String batchNo,String[] orderNos,int bussinessType); +
+*由于该接口效率太低，查询速率太慢，索引不合理，已经停用。*
+
+==== 业务逻辑
+通过批次号、订单号、业务类型查询 +
+批次号可以为空,订单也可以为空 +
+1.	查询代收付表结果,如果存在结果则返回 +
+2.	如果代收付表不存在结果,则查询历史表,如果存在返回结果 +
+3.	如果历史表不存在,返回结果null
+
+=== 多渠道结果通知代收付
+public String resultNotify(ResponseDto resoibseDto);
+
+==== 业务逻辑
+按照单笔代收、单笔代付、批量代收、批量代付四种类型分别处理;
+
+
+== 定时任务
+
+=== 任务汇总
+com.rkylin.crps.task.PaymentTask#public void task();
+
+==== 业务逻辑
+
+_前提_:批量代收付数据已经通过<<transDetailFromOrderList>>接收进入TRANS_DETAIL_SUMMARY表，状态为1，等待汇总
+include::puml/paymentTask.adoc[]
+
+=== 代收付推送历史数据
+com.rkylin.crps.task.DataToHisFromGenTask#public void task(); +
+*该定时任务有bug，具体维护方式见运营手册的Q2*
+
+==== 业务流程
+include::puml/dataToHisFromGenTask.adoc[]
+
+== 系统状态码
+=== 主要表状态
+[cols="3*"]
+|===
+|表名
+|状态值
+|状态值说明
+
+|TRANS_DETAIL
+|1
+|待汇总
+
+|TRANS_DETAIL
+|2
+|已汇总发送
+
+|TRANS_DETAIL
+|15
+|成功
+
+|TRANS_DETAIL
+|13
+|失败
+|===
+
+[cols="3*"]
+|===
+|表名
+|状态值
+|状态值说明
+
+|TRANS_DETAIL_SUMMARY
+|1
+|待汇总
+
+|TRANS_DETAIL_SUMMARY
+|2
+|已汇总发送
+
+|TRANS_DETAIL_SUMMARY
+|15
+|成功
+
+|TRANS_DETAIL_SUMMARY
+|13
+|失败
+|===
+
+[cols="3*"]
+|===
+|表名
+|状态值
+|状态值说明
+
+|GENERATION_PAYMENT
+|2
+|待发送
+
+|GENERATION_PAYMENT
+|3
+|已发送
+
+|GENERATION_PAYMENT
+|4
+|发送失败
+
+|GENERATION_PAYMENT
+|13
+|失败
+
+|GENERATION_PAYMENT
+|15
+|成功
+|===
+
+=== 主要业务类型
+BusinessCode : 11101 代付， 09100 代收 +
+OrderType : 1 代收， 2 代付 +
+BusinessType:  0 单笔， 1 批量 +
+
+== 常用维护sql
+
+=== TRANS_DETAIL
+
+==== 根据ORDER_NO查询代收付批次号
+```
+SELECT EXPAND1 FROM TRANS_DETAIL WHERE ORDER_NO IN (?);
+```
+==== 根据账户批次号查询代收付批次号
+```
+SELECT EXPAND1 FROM TRANS_DETAIL WHERE REQUEST_NO IN (?);
+```
+
+==== 根据代收付批次号查询批次流水
+```
+SELECT * FROM GENERATION_PAYMENT WHERE BATCH_NO IN (?);
+```
+
+== 代收付系统信息
+```
+Svn地址：https://svn.in.dataengine.com/svn/RD/Development/Payment/crps/
+生产服务器：外网：121.40.114.18，内网：10.171.224.33
+生产Tomcat路径：/mydata/website/tomcat-crps-8092
+日志路径：tomcat下logs路径
+```

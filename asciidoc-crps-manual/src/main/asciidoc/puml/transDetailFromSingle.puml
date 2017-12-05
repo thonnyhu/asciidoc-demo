@@ -1,0 +1,16 @@
+
+@startuml
+start
+: 账户发送代收付数据;
+: 单笔数据格式校验;
+if(格式正确) then (yes)
+    :入库trans_detail,\ntrans_detailSummary ;
+    : 发送多渠道 ;
+
+else (no)
+    :返回账户校验失败错误码,错误信息;
+
+endif
+stop
+
+@enduml

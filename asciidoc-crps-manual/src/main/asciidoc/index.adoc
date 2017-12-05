@@ -1,0 +1,17 @@
+= 代收付手册
+:author: ZiJian Hu
+:email: <76585807@qq.com>
+:revnumber: 1.0
+:revdate:2017-11-30
+:toc:
+:toclevels: 4
+:toc-title: 内容
+:sectnums:
+
+include::crps.adoc[]
+
+// include::crps.adoc[]
+
+// include::puml/test-c.adoc[]
+
+// include::dot/test3.adoc[]

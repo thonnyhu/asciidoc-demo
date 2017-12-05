@@ -1,0 +1,40 @@
+[plantuml,transDetailFromOrderList]
+----
+
+@startuml
+|#width|账户|
+start
+:账户调用代收付批量代收付接口;
+|#AntiqueWhite|代收付|
+: 数据校验;
+if (数据格式正确) then (no)
+|账户|
+    :返回账户失败;
+    stop;
+
+else (yes)
+|代收付|
+    :插入TRANS_DETAIL表\n状态为1，初始状态;
+    :按照多渠道协定多笔上限进行拆分;
+    :插入Trans_Detail_Summary\n状态为1，初始状态;
+    :<color:red>定时任务:</color>如果笔数超限，按笔数拆分;
+    note left
+        定时任务业务流程内容见2.1.1
+    end note
+    :按银行拆分;
+    :插入GENERATION_PAYMENT，状态为：2待发送\n更新TRANS_DETAIL,TRANS_DETAIL_SUMMARY状态为:2已发送;
+    if(发送多渠道) then (失败)
+    :发送多渠道失败，GENERATION_PAYMENT状态更新为发送失败：4;
+    stop
+    else (成功)
+    |多渠道|
+    :发送多渠道;
+    |代收付|
+    :返回结果,更新\nTRANS_DETAIL_SUMMARY\nGENERATION_PAYMENT\nTRANS_DETAIL表状态;
+    |账户|
+    :通知账户代收付结果;
+    endif
+endif
+stop
+@enduml
+----
