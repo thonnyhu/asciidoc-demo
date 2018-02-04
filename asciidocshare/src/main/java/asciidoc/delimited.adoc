@@ -1,0 +1,46 @@
+== 分界
+分界或者称为分块，都可以有自己的属性
+
+来看一个例子：
+
+:version: 1.5.6.1
+
+[source,xml,subs="verbatim,attributes"]
+----
+<dependency>
+  <groupId>org.asciidoctor</groupId>
+  <artifactId>asciidoctor-java-integration</artifactId>
+  <version>{version}</version>
+</dependency>
+我的版本号是{version}
+----
+
+看个引言的例子.
+[quote, 鲁迅, 我说过系列 ]
+____
+横眉冷对千夫指，俯首甘为孺子牛
+____
+
+
+看一个典型的块内容： +
+这里，我再举个例子
+
+.我是例子
+====
+我要说一下特别的事：
+
+[特别的事]
+....
+我是特别的事
+....
+====
+
+[NOTE]
+====
+注意，注意。
+
+.要注意的事情
+- 八大原则
+- 七项注意
+====
+

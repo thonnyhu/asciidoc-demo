@@ -11,7 +11,8 @@
     <modules>
         <module>module1init</module> <!-- 任务调度 -->
         <module>asciidoc-operate-manual</module>
-        <module>asciidoc-crps-manual</module> <!-- 运营手册 -->
+        <module>asciidoc-crps-manual</module>
+        <module>asciidocshare</module> <!-- 运营手册 -->
     </modules>
 
 

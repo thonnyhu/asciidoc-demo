@@ -1,0 +1,13 @@
+== 文本头
+
+----
+一般都这么写：
+= 文章标题
+作者大大 <doc.writer@asciidoctor.org>
+v1.0（版本号）, 2014-01-01（日期）
+:toc:
+:imagesdir: assets/images
+:homepage: http://asciidoctor.org
+
+正文...
+----

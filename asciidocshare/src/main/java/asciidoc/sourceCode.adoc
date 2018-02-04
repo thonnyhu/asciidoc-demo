@@ -1,0 +1,37 @@
+== 源码
+来段java的
+[source,java]
+----
+package asciidoc;
+
+public class A {
+    public static void main(String[] args) {
+        System.out.println("Hello World"); //<1>
+    }
+}
+
+----
+<1> 赫赫有名的Hello World
+
+当然，你也可以这么引用
+[source,java]
+----
+include::A.java[]
+----
+
+我只想要hello world
+----
+include::A.java[lines=5]
+----
+
+再来个xml的
+[source,xml]
+----
+    <parent>
+        <artifactId>asciidoc-demo</artifactId>
+        <groupId>org.ngnm.document</groupId>
+        <version>1.0.0</version>
+    </parent>
+----
+
+

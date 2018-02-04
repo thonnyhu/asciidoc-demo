@@ -1,0 +1,59 @@
+== 表格
+
+来看一个标准的表格
+
+.我是表格名称
+|===
+|表头1|表头2|表头3
+
+|第一行1
+|第一行2
+|第一行3
+
+|第二行1
+|第二行2
+|第二行3
+
+|===
+
+.csv格式的
+[%header,format=csv]
+|===
+title1,title2,title3
+Baauer,Harlem Shake,Hip Hop
+The Lumineers,Ho Hey,Folk Rock
+|===
+
+.csv文件的
+[%header,format=csv]
+|===
+include::data.csv[]
+|===
+
+.带样式的表格
+[cols="2,2,5a",options="header" ]
+|===
+|表头1
+|表头2
+|表头3
+|Firefox
+|Browser
+|Mozilla Firefox is an open-source web browser.
+
+It's designed for:
+
+* standards compliance
+* performance
+* portability
+
+http://getfirefox.com[Get Firefox]!
+|===
+
+还有个这样的表格
+[cols="e,m,^,>s", width="25%"]
+|===
+|1 >s|2 |3 |4
+^|5 2.2+^.^|6 .3+<.>m|7
+^|8
+|9 2+>|10
+|===

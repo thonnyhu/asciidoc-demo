@@ -1,0 +1,5 @@
+== 视频
+syntax:
+
+ video::video_file.mp4[]
+

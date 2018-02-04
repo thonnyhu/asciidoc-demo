@@ -1,0 +1,11 @@
+== 链接
+* 外部链接
+
+http://plus.sankuai.com - plus +
+http://git.sankuai.com[git] +
+https://github.com[Github @ GayHub]
+
+[[不信你试试]] 这里有一个锚点
+
+anchor:跨页锚点[]这里有一个跨页的锚点
+
